@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3D AirPods Store</title>
+<style>
+  body, html {
+    margin: 0; padding: 0; overflow-x: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #111; color: #eee; height: 100vh; display: flex; flex-direction: column; align-items: center;
+  }
+  #container {
+    width: 100%; max-width: 1200px; height: 600px; margin-top: 20px; border-radius: 10px; overflow: hidden;
+    box-shadow: 0 0 40px #0af;
+  }
+  h1 {
+    margin-top: 20px; font-weight: 700; color: #0af;
+  }
+  .product-buttons {
+    display: flex; justify-content: center; gap: 40px; margin: 20px 0 60px 0;
+  }
+  button.buy-btn {
+    background: #0af; border: none; border-radius: 5px;
+    color: #111; font-weight: 700; font-size: 18px;
+    padding: 10px 20px; cursor: pointer; transition: background 0.3s ease;
+    box-shadow: 0 0 15px #0afaa;
+  }
+  button.buy-btn:hover {
+    background: #07c; box-shadow: 0 0 25px #07c;
+  }
+</style>
+</head>
+<body>
+
+<h1>3D Interactive AirPods Store</h1>
+<div id="container"></div>
+
+<div class="product-buttons">
+  <button class="buy-btn" onclick="buyProduct('AirPods Pro')">Buy AirPods Pro</button>
+  <button class="buy-btn" onclick="buyProduct('AirPods 3rd Gen')">Buy AirPods 3rd Gen</button>
+  <button class="buy-btn" onclick="buyProduct('AirPods Max')">Buy AirPods Max</button>
+</div>
+
+<!-- Three.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.min.js"></script>
+
+<script>
+  // Setup scene, camera, renderer
+  const container = document.getElementById('container');
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x111111);
+
+  const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+  camera.position.set(0, 2, 8);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  container.appendChild(renderer.domElement);
+
+  // Orbit controls for interactivity
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.1;
+  controls.minDistance = 3;
+  controls.maxDistance = 15;
+  controls.maxPolarAngle = Math.PI / 2; // limit vertical rotation
+
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(ambientLight);
+
+  const directionalLight = new THREE.DirectionalLight(0x00aaff, 1);
+  directionalLight.position.set(5, 10, 7);
+  scene.add(directionalLight);
+
+  // Helpers
+  // const gridHelper = new THREE.GridHelper(10, 20);
+  // scene.add(gridHelper);
+
+  // Create AirPods models (simplified shapes)
+  // AirPods Pro - compact shape
+  function createAirPodsPro() {
+    const group = new THREE.Group();
+
+    const earbudMaterial = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.5, roughness: 0.3, clearcoat: 1 });
+    // Earbud main body (rounded capsule)
+    const bodyGeom = new THREE.CapsuleGeometry(0.25, 0.5, 4, 8);
+    const body = new THREE.Mesh(bodyGeom, earbudMaterial);
+    body.rotation.z = Math.PI / 2;
+    group.add(body);
+
+    // Stem
+    const stemGeom = new THREE.CylinderGeometry(0.07, 0.07, 0.7, 16);
+    const stem = new THREE.Mesh(stemGeom, earbudMaterial);
+    stem.position.set(0.4, -0.3, 0);
+    stem.rotation.z = Math.PI / 6;
+    group.add(stem);
+
+    return group;
+  }
+
+  // AirPods 3rd Gen - slightly different shape
+  function createAirPods3() {
+    const group = new THREE.Group();
+    const material = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.4, roughness: 0.25, clearcoat: 0.9 });
+
+    // Earbud sphere
+    const earbudSphere = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16), material);
+    earbudSphere.position.set(0, 0, 0);
+    group.add(earbudSphere);
+
+    // Stem (longer and straighter)
+    const stemGeom = new THREE.CylinderGeometry(0.06, 0.06, 1, 16);
+    const stem = new THREE.Mesh(stemGeom, material);
+    stem.position.set(0.5, -0.4, 0);
+    group.add(stem);
+
+    return group;
+  }
+
+  // AirPods Max - big headphones with ear cups
+  function createAirPodsMax() {
+    const group = new THREE.Group();
+    const mat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, metalness: 0.3, roughness: 0.6, clearcoat: 0.8 });
+
+    // Headband
+    const bandGeom = new THREE.TorusGeometry(1.3, 0.1, 16, 100, Math.PI);
+    const band = new THREE.Mesh(bandGeom, mat);
+    band.position.y = 0.7;
+    band.rotation.x = Math.PI / 2;
+    group.add(band);
+
+    // Left ear cup
+    const leftCup = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.45, 0.25, 32), mat);
+    leftCup.position.set(-1.3, 0, 0);
+    leftCup.rotation.z = Math.PI / 2;
+    group.add(leftCup);
+
+    // Right ear cup
+    const rightCup = leftCup.clone();
+    rightCup.position.x = 1.3;
+    group.add(rightCup);
+
+    return group;
+  }
+
+  // Create and position products
+  const airPodsPro = createAirPodsPro();
+  airPodsPro.position.set(-3, 0, 0);
+  scene.add(airPodsPro);
+
+  const airPods3 = createAirPods3();
+  airPods3.position.set(0, 0, 0);
+  scene.add(airPods3);
+
+  const airPodsMax = createAirPodsMax();
+  airPodsMax.position.set(3, 0, 0);
+  scene.add(airPodsMax);
+
+  // Add subtle floating animation
+  const clock = new THREE.Clock();
+
+  // Raycaster for interaction
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  // Store products and their meshes for interaction
+  const products = [
+    { name: "AirPods Pro", mesh: airPodsPro },
+    { name: "AirPods 3rd Gen", mesh: airPods3 },
+    { name: "AirPods Max", mesh: airPodsMax }
+  ];
+
+  // Highlight selected product
+  let selectedProduct = null;
+
+  // Create outline effect by changing emissive color on hover/selected
+  function setHighlight(mesh, highlight) {
+    mesh.traverse(child => {
+      if (child.isMesh) {
+        if (highlight) {
+          child.material.emissive = new THREE.Color(0x00aaff);
+          child.material.emissiveIntensity = 0.6;
+        } else {
+          child.material.emissiveIntensity = 0;
+        }
+      }
+    });
+  }
+
+  // Mouse move event to detect hover
+  function onMouseMove(event) {
+    // Calculate mouse position in normalized device coordinates
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  }
+
+  window.addEventListener('mousemove', onMouseMove);
+
+  // Mouse click to select product
+  function onClick(event) {
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(products.flatMap(p => {
+      let children = [];
+      p.mesh.traverse(c => { if (c.isMesh) children.push(c); });
+      return children;
+    }));
+
+    if (intersects.length > 0) {
+      const mesh = intersects[0].object;
+      // Find which product
+      const product = products.find(p => {
+        let found = false;
+        p.mesh.traverse(c => {
+          if (c === mesh) found = true;
+        });
+        return found;
+      });
+      if (product) {
+        // Set new selected product
+        if (selectedProduct) setHighlight(selectedProduct.mesh, false);
+        selectedProduct = product;
+        setHighlight(selectedProduct.mesh, true);
+        alert(Selected ${product.name}. You can click the Buy button below to purchase.);
+      }
+    }
+  }
+  window.addEventListener('click', onClick);
+
+  // Animate loop
+  function animate() {
+    requestAnimationFrame(animate);
+    const elapsed = clock.getElapsedTime();
+
+    // Float animation (up/down)
+    airPodsPro.position.y = 0.1 * Math.sin(elapsed * 1.2);
+    airPods3.position.y = 0.15 * Math.sin(elapsed * 1.5 + 1);
+    airPodsMax.position.y = 0.1 * Math.sin(elapsed * 1.1 + 2);
+
+    // Rotate slowly around Y axis
+    airPodsPro.rotation.y += 0.005;
+    airPods3.rotation.y += 0.006;
+    airPodsMax.rotation.y += 0.004;
+
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // Buy button handler
+  function buyProduct(productName) {
+    if (selectedProduct && selectedProduct.name === productName) {
+      alert(Proceeding to buy ${productName} - (This is a placeholder));
+      // You can link to actual buy page here:
+      // window.location.href = 'https://yourstore.com/product/airpods-pro';
+    } else {
+      alert(Please select the ${productName} by clicking on it in the 3D view before buying.);
+    }
+  }
+
+  // Responsive resize
+  window.addEventListener('resize', () => {
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+  });
+</script>
+</body>
+</html>
